@@ -1,0 +1,10 @@
+name: ieeg-dev
+channels:
+  - conda-forge
+dependencies:
+  - python<3.13
+  - pip
+  - pyvistaqt
+  - ipympl
+  - pip:
+    - -e ../../.

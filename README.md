@@ -2,6 +2,8 @@
 
 A repo of current preprocessing pipelines for the [Cogan Lab](https://www.coganlab.org/)
 
+[![Brain](./docs/images/brain_rot.gif)](https://www.coganlab.org/)
+
 ## Documentation
 
 [![Documentation Status](https://readthedocs.org/projects/ieeg-pipelines/badge/?version=latest)](https://ieeg-pipelines.readthedocs.io/en/latest/?badge=latest)
@@ -10,7 +12,7 @@ A repo of current preprocessing pipelines for the [Cogan Lab](https://www.coganl
 
 ## Pipeline Functionality
 
-[![Python (3.10) on Windows/Linux](https://github.com/coganlab/IEEG_Pipelines/actions/workflows/Conda-CI.yml/badge.svg)](https://github.com/coganlab/IEEG_Pipelines/actions/workflows/Conda-CI.yml)
+[![Python (3.10) on Windows/Linux](https://github.com/coganlab/IEEG_Pipelines/actions/workflows/Python-CI.yml/badge.svg)](https://github.com/coganlab/IEEG_Pipelines/actions/workflows/Python-CI.yml)
 
 [![MATLAB latest](https://github.com/coganlab/IEEG_Pipelines/actions/workflows/MATLAB-CI.yml/badge.svg)](https://github.com/coganlab/IEEG_Pipelines/actions/workflows/MATLAB-CI.yml)
 
@@ -24,7 +26,7 @@ A repo of current preprocessing pipelines for the [Cogan Lab](https://www.coganl
 2. Clone this repository into your userpath (`Documents/MATLAB` by default)
 3. Run commands:
 
-    ```(MATLAB)
+    ```MATLAB
     path = fullfile(userpath, 'IEEG_Pipelines', 'MATLAB');
     addpath(genpath(path));
     ```
@@ -36,30 +38,34 @@ Version 3.10 supported
 #### Conda
 
 1. Install Anaconda
-2. Clone this repository
-3. Open a terminal and `cd` into this repo's `Python` directory
-4. Run this command:
+2. Create an anaconda environment with python and pip packages installed
+    
+     ```bash
+     conda create -n <YOUR_NAME> python<3.13 pip
+     ```
+3. Activate the environment
 
-    ```(bash)
-    conda env create -f envs/environment.yml
+    ```bash
+    conda activate <YOUR_NAME>
+    ```
+   
+4. Run
+
+    ```bash
+    pip install ieeg
     ```
 
-5. When it is finished installing run `conda activate preprocess` to activate the environment
-
-#### Pip
+#### [Pip](https://pypi.org/project/ieeg/)
 
 1. Install Python
-2. Clone this repository
-3. Open a terminal and `cd` into this repo's `Python` directory
-4. Run:
+2. Run:
 
-    ```(bash)
-    python -m venv <PATH TO VENV>/preprocess
-    python -m pip install -r envs/requirements.txt -e <PATH TO VENV>/preprocess
+    ```bash
+    python -m venv <PATH TO VENV>/<YOUR_NAME>
+    source activate <PATH TO VENV>/<YOUR_NAME>
+    python -m pip install ieeg
     ```
-
-5. When it is finished installing run `source activate <PATH TO VENV>/preprocess` to activate the environment
-
+   
 ## Usage
 
 ### MATLAB (INCOMPLETE)
@@ -70,12 +76,12 @@ Version 3.10 supported
 
 ### Python ([INCOMPLETE](https://github.com/orgs/coganlab/projects/7))
 
-1. Load BIDS files from BIDS directory using `pybids`
+1. Load BIDS files from BIDS directory using [`pybids`](https://bids-standard.github.io/pybids/)
     
-    ```(python)
+    ```python
     from bids import BIDSLayout
     import ieeg
-    layout = BIDSLayout(BIDS_root)
+    layout = BIDSLayout(<BIDS_root>)
     data = ieeg.io.raw_from_layout(layout)
     ```
 2. [Perform line noise filtering](https://ieeg-pipelines.readthedocs.io/en/latest/auto_examples/plot_clean.html)

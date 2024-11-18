@@ -1,3 +1,4 @@
+function ieegfilt = filt60(ieeg, fs)
 % filt60 - Apply a notch filter at 60 Hz to remove power line interference.
 %
 % Syntax: ieegfilt = filt60(ieeg, fs)
@@ -14,15 +15,18 @@
 %   fs = 1000; % Sampling frequency of 1000 Hz
 %   filteredSignal = filt60(ieegSignal, fs);
 %
-
-
-function ieegfilt = filt60(ieeg, fs)
     f60 = 60; % Power line frequency
     q = 10; % Quality factor
-    bw = (f60 / (fs/2)) / q; % bandwidth
+    Wo = (f60 / (fs/2)); % bandwidth
     
     % Design the notch filter
-    [filtb, filta] = iircomb(round(fs / f60), bw, 'notch');
+    if fs == 2048
+        filta = [1, -1.9483, 0.9818];
+        filtb = [0.9909, -1.9483, 0.9909];
+    else
+        [filtb, filta] = designNotchPeakIIR(CenterFrequency=Wo, ...
+            QualityFactor=q, Response='notch');
+    end
     
     % Apply the notch filter to each channel of the EEG signal
     ieegfilt = zeros(size(ieeg));

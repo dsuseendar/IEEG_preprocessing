@@ -1,0 +1,77 @@
+name: 'Tests'
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pytest:
+    name: '${{ matrix.os }} / ${{ matrix.kind }} / ${{ matrix.python }}'
+    timeout-minutes: 70
+    continue-on-error: true
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
+    env:
+      PYTHON_VERSION: '${{ matrix.python }}'
+      MKL_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+      MNE_CI_KIND: '${{ matrix.kind }}'
+      CI_OS_NAME: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        include:
+        - os: windows-latest
+          python: '3.12'
+          kind: pip
+        - os: macos-latest
+          python: '3.11'
+          kind: pip
+        - os: ubuntu-latest
+          python: '3.10'
+          kind: pip
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+      # Xvfb/OpenGL
+      - uses: pyvista/setup-headless-display-action@main
+        with:
+          qt: true
+          pyvista: false
+      # Python (if pip)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: 'pip'
+          cache-dependency-path: |
+            **/setup.py
+            **/requirements.txt
+            **/pyproject.toml
+      - if: matrix.os != 'windows-latest'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e . -v
+      - if: matrix.os == 'windows-latest'
+        run: |
+          python -m pip install --upgrade pip setuptools cython numpy wheel
+          python ./setup.py develop -v
+      # Check Qt on non-notebook
+      - run: ./.github/check_qt_import.sh $MNE_QT_BACKEND
+        if: ${{ env.MNE_QT_BACKEND != '' }}
+      - name: List packages
+        run: |
+          python -c "import mne; mne.sys_info()"
+      - name: fetch mne datasets
+        run: python -c "import mne; mne.datasets.misc.data_path(); mne.datasets.epilepsy_ecog.data_path(); mne.datasets.sample.data_path()"
+        if: matrix.os == 'ubuntu-latest'
+      - name: Test with pytest
+        run: |
+          pip install -r envs/dev/testing-reqs.txt
+          pytest tests ieeg -v --cov=. --doctest-modules --pycodestyle --cov-report xml
+        if: matrix.os == 'ubuntu-latest'
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        if: matrix.os == 'ubuntu-latest'
