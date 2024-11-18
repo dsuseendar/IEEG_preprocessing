@@ -1,4 +1,4 @@
-function [specMeanAll, specMeanPower, meanFreqChanOut] = specChanMap(spec, chanMap, selectedChannels, sigChannel, tw, entw, etw, efw, gammaF, cval, isIndView, meanFreqChanIn)
+function [specMeanAll, specMeanPower, meanFreqChanOut] = specChanMap(spec, chanMap, selectedChannels, sigChannel, tw, entw, etw, efw, desiredFreq, cval, isIndView, meanFreqChanIn)
 % specChanMap - Plot spectrograms and calculate mean power for each channel.
 %
 % Inputs:
@@ -45,9 +45,9 @@ if isIndView
 
         specMean = squeeze(mean(spec2Analyze ./ reshape(meanFreq, 1, 1, []), 1));
         specMeanAll(iChan, :, :) = specMean'; % Store mean spectrogram for the channel
-        specMeanPower = mean2(squeeze(specMeanAll(iChan, F >= gammaF(1) & F <= gammaF(2), tspec >= etw(1) & tspec <= etw(2)))); % Calculate mean power within gamma frequency range
+        specMeanPower = mean2(squeeze(specMeanAll(iChan, F >= desiredFreq(1) & F <= desiredFreq(2), tspec >= etw(1) & tspec <= etw(2)))); % Calculate mean power within gamma frequency range
 
-        imagesc(tspec, [], 20 .* log10(sq(specMean)'))
+        imagesc(tspec, [], 20 .* log10(squeeze(specMean)'))
         
         if isnumeric(selectedChannels(iChan))
             title(strcat('Channel: ', num2str(selectedChannels(iChan))));
@@ -80,12 +80,12 @@ else
 
         specMean = squeeze(mean(spec2Analyze ./ reshape(meanFreq, 1, 1, []), 1));
         specMeanAll(iChan, :, :) = specMean'; % Store mean spectrogram for the channel
-        specMeanPower(iChan) = mean2(squeeze(specMeanAll(iChan, F >= gammaF(1) & F <= gammaF(2), tspec >= etw(1) & tspec <= etw(2)))); % Calculate mean power within gamma frequency range
+        specMeanPower(iChan) = mean2(squeeze(specMeanAll(iChan, F >= desiredFreq(1) & F <= desiredFreq(2), tspec >= etw(1) & tspec <= etw(2)))); % Calculate mean power within gamma frequency range
 
         [p] = numSubplots(length(spec));
         if isempty(chanMap)
             subaxis(p(1), p(2), iChan, 'sh', 0.06, 'sv', 0.02, 'padding', 0, 'margin', 0)
-            imagesc(tspec, F, 20 .* log10(sq(specMean)'));
+            imagesc(tspec, F, 20 .* log10(squeeze(specMean)'));
             axis off;
             axis('square');
             axis tight;
@@ -93,7 +93,7 @@ else
             % ax.Position = [ax.Position(1) ax.Position(2) 1/p(2) 1/p(1)];
         else
             subaxis(size(chanMap, 1), size(chanMap, 2), find(ismember(chanMap', selectedChannels(iChan))), 'SpacingHoriz', 0.0001 / size(chanMap, 2), 'SpacingVert', 0.1 / size(chanMap, 2), 'padding', 0, 'margin', 0);
-            imagesc(tspec, F, 20 .* log10(sq(specMean)'));
+            imagesc(tspec, F, 20 .* log10(squeeze(specMean)'));
             axis off;
             axis square;
             axis tight;
