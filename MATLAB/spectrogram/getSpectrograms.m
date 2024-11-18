@@ -31,47 +31,54 @@ function [spec, pPerc] = getSpectrograms(ieeg, goodtrials, tw, etw, efw, prtw, p
 %    [spec, pPerc] = getSpectrograms(ieeg, goodtrials, tw, etw, efw, prtw, pertw, intF, fs, ispermTest); % Extract spectrograms and perform statistical tests
 %
 
-AnaParams.dn = 0.05;
-AnaParams.Tapers = [0.5, 10];
-AnaParams.fk = [efw(1), efw(2)];
-AnaParams.Fs = fs;
+ % Parameters for spectrogram analysis
+ AnaParams.dn = 0.05;
+ AnaParams.Tapers = [0.5, 10];
+ AnaParams.fk = [efw(1), efw(2)];
+ AnaParams.Fs = fs;
 
-channelOfInterest = 1:size(ieeg, 1);
-numPerm = 10000;
+ % Channels and permutation parameters
+ channelOfInterest = 1:size(ieeg, 1);
+ numPerm = 10000;
 
-for iChan = 1:length(channelOfInterest)
-    iChan
-    
-    if isempty(goodtrials)
-        trials_g = 1:size(ieeg, 2);
-    elseif iscell(goodtrials)
-        trials_g = goodtrials{iChan};
-    else
-        trials_g = goodtrials;
-    end
-    
-    [spec{iChan}, F] = extract_spectrograms_channel(squeeze(ieeg(iChan, trials_g, :)), AnaParams);
-    gammaFreq = F >= intF(1) & F <= intF(2);
-    tspec = linspace(tw(1), tw(2), size(spec{iChan}, 2));
-    prtspec = tspec >= prtw(1) & tspec <= prtw(2);
-    perctspec = tspec >= pertw(1) & tspec <= pertw(2);
-    
-    if ispermTest == 1
-        meanBase = [];
-        meanOnsetPercept = [];
-        
-        for t = 1:length(trials_g)
-            meanBase(t) = mean2(squeeze(spec{iChan}(t, prtspec, gammaFreq)));
-            meanOnsetPercept(t) = mean2(squeeze(spec{iChan}(t, perctspec, gammaFreq)));
-        end
-        
-        pPerc(iChan) = permtest(meanOnsetPercept, meanBase, numPerm);
-    else
-        pPerc(iChan) = 0;
-    end
-    
-    etspec = tspec >= etw(1) & tspec <= etw(2);
-    spec{iChan} = spec{iChan}(:, etspec, :);
+ % Arrayfun to process each channel and store results
+ [spec, pPerc] = arrayfun(@(iChan) process_channel(iChan, ieeg, goodtrials, AnaParams, ...
+                                                   tw, etw, prtw, pertw, intF, ispermTest, numPerm), ...
+                          channelOfInterest, 'UniformOutput', false);
+
+ % Convert pPerc from cell array to numeric array for output
+ pPerc = cell2mat(pPerc);
 end
 
+% Helper function to process each channel
+function [spec_out, pPerc_out] = process_channel(iChan, ieeg, goodtrials, AnaParams, ...
+                                              tw, etw, prtw, pertw, intF, ispermTest, numPerm)
+ % Determine trials for current channel
+ if isempty(goodtrials)
+     trials_g = 1:size(ieeg, 2);
+ elseif iscell(goodtrials)
+     trials_g = goodtrials{iChan};
+ else
+     trials_g = goodtrials;
+ end
+
+ % Extract spectrogram and define frequency/time windows
+ [spec_out, F] = extract_spectrograms_channel(squeeze(ieeg(iChan, trials_g, :)), AnaParams);
+ gammaFreq = F >= intF(1) & F <= intF(2);
+ tspec = linspace(tw(1), tw(2), size(spec_out, 2));
+ prtspec = tspec >= prtw(1) & tspec <= prtw(2);
+ perctspec = tspec >= pertw(1) & tspec <= pertw(2);
+
+ % Perform permutation test if required
+ if ispermTest == 1
+     meanBase = arrayfun(@(t) mean2(squeeze(spec_out(t, prtspec, gammaFreq))), 1:length(trials_g));
+     meanOnsetPercept = arrayfun(@(t) mean2(squeeze(spec_out(t, perctspec, gammaFreq))), 1:length(trials_g));
+     pPerc_out = permtest(meanOnsetPercept, meanBase, numPerm);
+ else
+     pPerc_out = 0;
+ end
+
+ % Extract time window of interest
+ etspec = tspec >= etw(1) & tspec <= etw(2);
+ spec_out = spec_out(:, etspec, :);
 end
