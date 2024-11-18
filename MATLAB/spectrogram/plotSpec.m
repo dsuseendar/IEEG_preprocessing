@@ -23,7 +23,7 @@ function plotSpec(spec,tw,freq,args)
     set(gca,'YTickLabels',round(freq(1:args.f_interal:end)));
     set(gca,'FontSize',args.font_size);
     title(args.title);
-    if(args.db)
+    if(args.isdb)
         caxis(20.*log10(cval))
     else
         caxis(cval)
