@@ -8,16 +8,12 @@ function plotSpec(spec,tw,freq,args)
         args.font_size = 8;
         args.etw = tw;
         args.title = '';
-        args.cval = [0.7 1.4];
+        args.cval = [-2 2];
         
     end
 
     tspec = linspace(tw(1), tw(2), size(spec, 1)); % Time vector for spectrograms
-    if(args.isdb)
-        spec2plot = 20.* log10(squeeze(spec));
-    else
-        spec2plot = squeeze(spec);
-    end
+    
     imagesc(tspec, [], spec2plot');
     
     set(gca,'YTick',1:args.f_interal:length(freq));
@@ -27,9 +23,6 @@ function plotSpec(spec,tw,freq,args)
     xlim(args.etw);
    
     title(args.title,'Interpreter','none');
-    if(args.isdb)
-        caxis(20.*log10(args.cval))
-    else
-        caxis(args.cval)
-    end
+    caxis(args.cval)
+    
 end
