@@ -3,7 +3,7 @@ function plotSpec(spec,tw,freq,args)
         spec
         tw
         freq
-        args.isdb = true;
+        
         args.f_interal = 5;
         args.font_size = 8;
         args.etw = tw;
@@ -14,7 +14,7 @@ function plotSpec(spec,tw,freq,args)
 
     tspec = linspace(tw(1), tw(2), size(spec, 1)); % Time vector for spectrograms
     
-    imagesc(tspec, [], spec2plot');
+    imagesc(tspec, [], spec');
     
     set(gca,'YTick',1:args.f_interal:length(freq));
     set(gca,'YTickLabels',round(freq(1:args.f_interal:end)));
@@ -24,5 +24,5 @@ function plotSpec(spec,tw,freq,args)
    
     title(args.title,'Interpreter','none');
     caxis(args.cval)
-    
+   
 end
