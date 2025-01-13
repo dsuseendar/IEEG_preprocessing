@@ -41,6 +41,7 @@ function [spec, pPerc] = getSpectrograms(ieeg, goodtrials, tw, etw, efw, prtw, p
  channelOfInterest = 1:size(ieeg, 1);
  numPerm = 10000;
 
+
  % Arrayfun to process each channel and store results
  [spec, pPerc] = arrayfun(@(iChan) process_channel(iChan, ieeg, goodtrials, AnaParams, ...
                                                    tw, etw, prtw, pertw, intF, ispermTest, numPerm), ...
@@ -48,6 +49,7 @@ function [spec, pPerc] = getSpectrograms(ieeg, goodtrials, tw, etw, efw, prtw, p
 
  % Convert pPerc from cell array to numeric array for output
  pPerc = cell2mat(pPerc);
+
 end
 
 % Helper function to process each channel
