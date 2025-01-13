@@ -6,7 +6,7 @@ import numpy as np
 from mne import Epochs, event, events_from_annotations
 from mne.epochs import BaseEpochs
 from mne.io import Raw, base
-from mne.time_frequency import AverageTFR, tfr_multitaper
+from mne.time_frequency import AverageTFRArray, tfr_multitaper
 from mne.utils import _pl, fill_doc, logger, verbose
 from scipy import fft, signal, stats
 
@@ -323,12 +323,12 @@ def spectra(x: np.ndarray, dpss: np.ndarray, sfreq: float,
     freqs = fft.rfftfreq(n_fft, 1. / sfreq)
 
     # The following is equivalent to this, but uses less memory:
-    # x_mt = fftpack.fft(x[:, np.newaxis, :] * dpss, n=n_fft)
-    n_tapers = dpss.shape[0] if dpss.ndim > 1 else 1
-    x_mt = np.zeros(x.shape[:-1] + (n_tapers, len(freqs)),
-                    dtype=np.complex128)
-    for idx, sig in enumerate(x):
-        x_mt[idx] = fft.rfft(sig[..., np.newaxis, :] * dpss, n=n_fft)
+    x_mt = fft.rfft(x[:, np.newaxis, :] * dpss, n=n_fft, workers=1)
+    # n_tapers = dpss.shape[0] if dpss.ndim > 1 else 1
+    # x_mt = np.zeros(x.shape[:-1] + (n_tapers, len(freqs)),
+    #                 dtype=np.complex128)
+    # for idx, sig in enumerate(x):
+    #     x_mt[idx] = fft.rfft(sig[..., np.newaxis, :] * dpss, n=n_fft)
     # Adjust DC and maybe Nyquist, depending on one-sided transform
     x_mt[..., 0] /= np.sqrt(2.)
     if n_fft % 2 == 0:
@@ -342,7 +342,7 @@ def spectra(x: np.ndarray, dpss: np.ndarray, sfreq: float,
 def spectrogram(line: BaseEpochs, freqs: np.ndarray,
                 baseline: BaseEpochs = None, n_cycles: np.ndarray = None,
                 pad: str = "0s", correction: str = 'ratio',
-                verbose: int = None, **kwargs) -> AverageTFR:
+                verbose: int = None, **kwargs) -> AverageTFRArray:
     """Calculate the multitapered, baseline corrected spectrogram
 
     Parameters
@@ -388,15 +388,16 @@ def spectrogram(line: BaseEpochs, freqs: np.ndarray,
     # set output data
     corrected_data = rescale(power._data, basepower._data, correction, axis=-1)
 
-    return AverageTFR(power.info, corrected_data, power.times, freqs,
-                      power.nave, power.comment, power.method)
+    return AverageTFRArray(power.info, corrected_data, power.times, freqs,
+                           nave=power.nave, comment=power.comment,
+                           method=power.method)
 
 
 @spectrogram.register
 def _(line: base.BaseRaw, freqs: np.ndarray, line_event: str, tmin: float,
       tmax: float, base_event: str = None, base_tmin: float = None,
       base_tmax: float = None, n_cycles: np.ndarray = None, pad: str = "500ms",
-      correction: str = 'ratio', **kwargs) -> AverageTFR:
+      correction: str = 'ratio', **kwargs) -> AverageTFRArray:
     """Calculate the multitapered, baseline corrected spectrogram
 
     Parameters

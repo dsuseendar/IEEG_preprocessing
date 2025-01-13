@@ -41,12 +41,15 @@ fHigh = params.fHigh;
 k0 = params.k0;
 waitc = params.waitc;
 
-for iChan = 1:size(ieeg, 1)
-    [wave, period] = basewave5(squeeze(ieeg(iChan, :, :)), fs, fLow, fHigh, k0, waitc);
-    waveSpec.spec{iChan} = permute(abs(wave), [1 3 2]); % Changing format to trials x time x frequency
-end
+% Apply basewave5 to each channel and permute the result using arrayfun
+[waveArray, periodArray] = arrayfun(@(iChan) basewave5(squeeze(ieeg(iChan, :, :)), fs, fLow, fHigh, k0, waitc), ...
+                                    1:size(ieeg, 1), 'UniformOutput', false);
 
-waveSpec.fscale = 1./period;
+% Format waveSpec.spec with permuted waveforms
+waveSpec.spec = cellfun(@(wave) permute(abs(wave), [1 3 2]), waveArray, 'UniformOutput', false);
+
+% Assign frequency scale and parameters
+waveSpec.fscale = 1 ./ periodArray{1};  % Assuming period is the same across channels
 waveSpec.params = params;
 
 end

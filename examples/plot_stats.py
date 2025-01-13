@@ -57,11 +57,11 @@ del raw
 # Time Cluster Stats
 # ------------------
 
-mask1 = stats.time_perm_cluster(resp._data, base._data,
+mask1, _ = stats.time_perm_cluster(resp._data, base._data,
                                 p_thresh=0.05,
                                 axis=0,
                                 n_perm=1000,
-                                n_jobs=6,
+                                n_jobs=1,
                                 ignore_adjacency=1)
 fig1 = plt.imshow(mask1)
 

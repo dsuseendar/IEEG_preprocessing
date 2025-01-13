@@ -9,7 +9,8 @@ performs joint pca decoding
 from ieeg.decoding.decoders import PcaLdaClassification
 from ieeg.calc.mat import LabeledArray
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
-from ieeg.calc.oversample import MinimumNaNSplit, mixupnd
+from ieeg.calc.oversample import MinimumNaNSplit
+from ieeg.calc.fast import mixup
 from ieeg.navigate import channel_outlier_marker, trial_ieeg, outliers_to_nan
 from ieeg.calc.scaling import rescale
 from ieeg.timefreq.utils import crop_pad
@@ -31,7 +32,7 @@ raw = mne.io.read_raw(misc_path / 'seeg' / 'sample_seeg_ieeg.fif',
 # Filter the data to remove line noise
 # ------------------------------------
 
-line_filter(raw, mt_bandwidth=10., n_jobs=-1, copy=False, verbose=10,
+line_filter(raw, mt_bandwidth=10., n_jobs=1, copy=False, verbose=10,
             filter_length='700ms', freqs=[60], notch_widths=20)
 # line_filter(raw, mt_bandwidth=10., n_jobs=-1, copy=False, verbose=10,
 #             filter_length='7s', freqs=[60, 120, 180, 240],
@@ -124,7 +125,7 @@ class Decoder(PcaLdaClassification, MinimumNaNSplit):
                 idx[obs_axs] = y_train == i
                 x_train[tuple(idx)] = self.oversample(x_train[tuple(idx)],
                                                       axis=obs_axs,
-                                                      func=mixupnd)
+                                                      func=mixup)
 
             # fill in test data nans with noise from distribution
             is_nan = np.isnan(x_test)

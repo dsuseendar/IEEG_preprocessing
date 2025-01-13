@@ -4,7 +4,7 @@ Morlet Wavelet spectrogram plot
 
 Below is a code sample for plotting wavelet spectrograms
 """
-from ieeg.viz import utils
+from ieeg.viz.ensemble import chan_grid
 from bids import BIDSLayout
 from ieeg.navigate import channel_outlier_marker, trial_ieeg, outliers_to_nan
 from ieeg.io import raw_from_layout
@@ -48,8 +48,8 @@ for epoch, t in zip(
     times[1] = t[1] + 0.5
     trials = trial_ieeg(good, epoch, times, preload=True)
     outliers_to_nan(trials, outliers=10)
-    spec = wavelet_scaleogram(trials, n_jobs=-2, decim=int(
-        good.info['sfreq'] / 100))
+    spec = wavelet_scaleogram(trials, n_jobs=1, decim=int(
+        good.info['sfreq'] / 200))
     crop_pad(spec, "0.5s")
     if epoch == "onset":
         base = spec.copy()
@@ -61,4 +61,4 @@ for epoch, t in zip(
 # %%
 # Plot data
 # ---------
-utils.chan_grid(spec_a, vmin=-2, vmax=20, cmap=parula_map)
+chan_grid(spec_a, vlim=(-2, 20), cmap=parula_map)
