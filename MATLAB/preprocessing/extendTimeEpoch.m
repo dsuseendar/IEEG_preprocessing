@@ -1,7 +1,7 @@
 function ieegPad = extendTimeEpoch(ieegData,sigLen)
 %EXTENDTIMEEPOCH 
 warning off;
-padTimeArray = 50:50:500;
+padTimeArray = 20:20:size(ieegData,3);
 
 
 for iChan = 1:size(ieegData,1)
@@ -13,15 +13,15 @@ for iChan = 1:size(ieegData,1)
         selectTrials = setdiff(1:size(ieegChan, 1),iTrial);
         randTrials = datasample(selectTrials, ceil(time2pad) - 1, 'Replace', false);
 
-        trials2join = ieegChan(randTrials, 1:padChoose*fs)';
+        trials2join = ieegChan(randTrials, 1:padChoose)';
         %sigGenLen = length(trials2join(:)) +padChoose;
         if(ceil(time2pad)==time2pad)
-            ieegChanPad(iTrial, :) = [ieegChan(iTrial, 1:padChoose*fs) trials2join(:)'];
+            ieegChanPad(iTrial, :) = [ieegChan(iTrial, 1:padChoose) trials2join(:)'];
         else
-            time2remove = (ceil(time2pad)-(time2pad))*fs;
+            %time2remove = (ceil(time2pad)-(time2pad))*fs;
             joinTrials = trials2join(:)';
             %randTrial = ieegChan(randsample(selectTrials,1),1:extraTimeNeed*fs-1);
-            ieegChanPad(iTrial, :) = [ieegChan(iTrial, 1:padChoose*fs) joinTrials(1:sigLen-padChoose*fs)];
+            ieegChanPad(iTrial, :) = [ieegChan(iTrial, 1:padChoose) joinTrials(1:sigLen-padChoose)];
         end
     end
 %     for iTrial = 1:size(ieegChan, 1)
