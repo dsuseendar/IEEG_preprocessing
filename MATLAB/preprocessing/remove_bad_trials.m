@@ -15,7 +15,7 @@ function [NumTrials, goodtrials] = remove_bad_trials(data, options)
 %   data = randn(10, 100, 500); % Example data with 10 electrodes, 100 trials, and 500 samples
 %   threshold = 3; % Threshold of 3 standard deviations
 %   [NumTrials, goodtrials] = remove_bad_trials(data, threshold); % Remove bad trials
-
+% Author: Kumar Duraivel
 arguments
     data double
     options.threshold = 10;
